@@ -12,7 +12,7 @@
 // For OpemMP programs, compile with
 //    gcc -O3 -fopenmp -o galaxy_openmp galaxy_openmp.c -lm
 // and run with
-//    srun -N 1 -c 40 ./galaxy_openmp RealGalaxies_100k_arcmin.dat SyntheticGalaxies_100k_arcmin.dat omega.out
+//    srun -N 1 -c 40 ./galaxy_openmp RealGalaxies_100k_arcmin.txt SyntheticGalaxies_100k_arcmin.txt omega.out
 //
 //
 // For MPI programs, compile with
@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 
 
 
-    pif = acosl(-1.0L);
+    pif = acosf(-1.0f);
 
     gettimeofday(&_ttime, &_tzone);
     double time_start = (double)_ttime.tv_sec + (double)_ttime.tv_usec/1000000.;
@@ -87,17 +87,17 @@ int main(int argc, char* argv[])
 
     int i,j;
     int indexDD,indexRR,indexDR;
-    double angleRR,angleDR,angleDD =0L;
+    float angleRR,angleDR,angleDD =0.0f;
     #pragma omp parallel for private(j,i,indexDD,indexRR,angleRR,angleDD)
     for (i=0;i<100000;++i){
             for(j=i+1;j<100000;++j){
-                angleDD= acosl(sinl(real_decl[i])*sinl(real_decl[j])+cosl(real_decl[i])*cosl(real_decl[j])*cosl(real_rasc[i]-real_rasc[j]))*180/pif;
-                angleRR= acosl(sinl(rand_decl[i])*sinl(rand_decl[j])+cosl(rand_decl[i])*cosl(rand_decl[j])*cosl(rand_rasc[i]-rand_rasc[j]))*180/pif;
+                angleDD= sinf(real_decl[i])*sinf(real_decl[j])+cosf(real_decl[i])*cosf(real_decl[j])*cosf(real_rasc[i]-real_rasc[j]);
+                angleRR= sinf(rand_decl[i])*sinf(rand_decl[j])+cosf(rand_decl[i])*cosf(rand_decl[j])*cosf(rand_rasc[i]-rand_rasc[j]);
 				if ( angleDD > 1.0 ) angleDD = 1.0;
-                indexDD=(int)(4.0*angleDD);
+                indexDD=(int)acosf(4.0*angleDD)*180/pif;
 				
 				if ( angleRR > 1.0 ) angleRR = 1.0;
-                indexRR=(int)(4.0*angleRR);
+                indexRR=(int)acosf(4.0*angleRR)*180/pif;
     #pragma omp atomic
                 histogram_DD[indexDD]+=2;
     #pragma omp atomic
@@ -113,9 +113,9 @@ int main(int argc, char* argv[])
     
 	for (i=0;i<100000;++i){
             for(j=0;j<100000;++j){
-                angleDR= acosl(sinl(real_decl[i])*sinl(rand_decl[j])+cosl(real_decl[i])*cosl(rand_decl[j])*cosl(real_rasc[i]-rand_rasc[j]))*180/pif;
+                angleDR= sinf(real_decl[i])*sinf(rand_decl[j])+cosf(real_decl[i])*cosf(rand_decl[j])*cosf(real_rasc[i]-rand_rasc[j]);
 				if ( angleDR > 1.0 ) angleDR = 1.0;
-                indexDR=(int)(4.0*angleDR);
+                indexDR=(int)acosf(4.0*angleDR)*180/pif;
 
     #pragma omp atomic
                 histogram_DR[indexDR]+=1;
